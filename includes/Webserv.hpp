@@ -9,4 +9,7 @@
 #include <fstream>
 #include <unistd.h>
 
+#include "../config/ConfigParser.hpp"
+#include "../server/Server.hpp"
+
 #endif
