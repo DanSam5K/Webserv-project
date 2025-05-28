@@ -30,54 +30,61 @@ class ConfigParser
         unsigned long _clientMaximumBodySize;
 
         // Listening port for the server
+        // const char*	
         std::string _listeningServerPort;
 
         // Default error pages mapped by HTTP status codes
+        // std::map<StatusCode, std::string>
         std::map<int, std::string> _defaultErrorPages;
 
         // Server blocks parsed from the configuration
+        
+    public:
+        // Vector of pointers to _server_blocks objects
         std::vector<ServerBlock*> _serverBlocksFromConfig;
 
-    public:
         // Constructors and Destructor
         ConfigParser();
-        ConfigParser(const ConfigParser& other);
+        ConfigParser(const ConfigParser &other);
         ~ConfigParser();
 
         // Assignment Operator
-        ConfigParser& operator=(const ConfigParser& other);
+        ConfigParser &operator=(const ConfigParser &other);
 
         // Configuration Parsing Methods
-        bool validateConfig(const std::string& configFilePath);
-        bool validateDirectives(const std::string& fileName);
-        void validateLocationBlock(std::ifstream& fileStream, const std::vector<std::string>& tokens, ServerBlock* serverBlock);
+        bool validateConfig(const std::string &configFilePath);
+        bool validateDirectives(const std::string &fileName);
+        void validateLocationBlock(std::ifstream &fileStream, const std::vector<std::string> &tokens, ServerBlock *serverBlock);
         void checkForDuplicateServerBlocks();
         void displayConfiguration() const;
 
         // Accessors
-        std::vector<ServerBlock*>& getServerBlocks();
+        std::vector<ServerBlock *> &getServerBlocks();
         unsigned long getClientMaximumBodySize() const;
-        const std::string& getListeningServerPort() const;
+
+
+        //const char*
+        const std::string &getListeningServerPort() const;
 
         // Exception Classes
         class FileNotFoundException : public std::exception {
         public:
-            const char* what() const noexcept override;
+            const char *what() const throw();
         };
 
         class InvalidDirectiveException : public std::exception {
         public:
-            const char* what() const noexcept override;
+            const char *what() const throw();
         };
 
         class MissingBracketsException : public std::exception {
         public:
-            const char* what() const noexcept override;
+            const char *what() const throw();
         };
 
         class DuplicateServerBlockException : public std::exception {
         public:
-            const char* what() const noexcept override;
+            const char *what() const throw();
         };
 };
 

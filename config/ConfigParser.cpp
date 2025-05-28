@@ -10,12 +10,54 @@
 //     std::cout << "Printing configuration..." << std::endl;
 // }
 
+
+
+
+// std::vector<ServerBlock*> _serverBlocksFromConfig;
+
+
+//         // Configuration Parsing Methods
+//         bool validateConfig(const std::string& configFilePath);
+//         bool validateDirectives(const std::string& fileName);
+
+//         void checkForDuplicateServerBlocks();
+//         void displayConfiguration() const;
+
+//         // Accessors
+//         std::vector<ServerBlock*>& getServerBlocks();
+//         unsigned long getClientMaximumBodySize() const;
+
+
+//         //const char*
+//         const std::string& getListeningServerPort() const;
+
+//         // Exception Classes
+//         class FileNotFoundException : public std::exception {
+//         public:
+//             const char* what() const throw();
+//         };
+
+//         class InvalidDirectiveException : public std::exception {
+//         public:
+//             const char* what() const throw();
+//         };
+
+//         class MissingBracketsException : public std::exception {
+//         public:
+//             const char* what() const throw();
+//         };
+
+//         class DuplicateServerBlockException : public std::exception {
+//         public:
+//             const char* what() const throw();
+//         };
+
 ConfigParser::ConfigParser()
     : _clientMaximumBodySize(0), _listeningServerPort("8080") {
     // Constructor implementation
 }
 
-ConfigParser::ConfigParser(const ConfigParser& other)
+ConfigParser::ConfigParser(const ConfigParser &other)
     : _clientMaximumBodySize(other._clientMaximumBodySize),
       _listeningServerPort(other._listeningServerPort),
       _defaultErrorPages(other._defaultErrorPages),
@@ -31,7 +73,7 @@ ConfigParser::~ConfigParser() {
     _serverBlocksFromConfig.clear();
 }
 
-ConfigParser& ConfigParser::operator=(const ConfigParser& other) {
+ConfigParser &ConfigParser::operator=(const ConfigParser &other) {
     if (this != &other) {
         _clientMaximumBodySize = other._clientMaximumBodySize;
         _listeningServerPort = other._listeningServerPort;
@@ -41,195 +83,331 @@ ConfigParser& ConfigParser::operator=(const ConfigParser& other) {
     return *this;
 }
 
-std::string trim(const std::string& str) {
-    const std::string whitespace = " \t\r\n";
-    const auto start = str.find_first_not_of(whitespace);
-    if (start == std::string::npos) return "";
-    const auto end = str.find_last_not_of(whitespace);
-    return str.substr(start, end - start + 1);
-}
-
-// Utility function to split a string into tokens based on whitespace
-std::vector<std::string> tokenize(const std::string& line) {
-    std::istringstream stream(line);
-    std::vector<std::string> tokens;
-    std::string token;
-    while (stream >> token) {
-        tokens.push_back(token);
-    }
-    return tokens;
-}
-
-// Function to check if braces are balanced in the configuration file
-bool areBracesBalanced(const std::string& filename) {
-    std::ifstream file(filename);
+// Checks if the number of '{' and '}' braces match in the given file
+// bool checkBlocks(std::string fileName)
+// UTILITY FUNCTION Refatcor later
+bool checkBalanceBraces(const std::string &fileName) {
+    std::ifstream file(fileName.c_str());
     if (!file.is_open()) {
-        std::cerr << "Failed to open config file: " << filename << std::endl;
+        std::cout << "Failed to open config file: " << fileName << std::endl;
         return false;
     }
 
-    std::stack<char> braceStack;
+    int openBraces = 0;
+    int closeBraces = 0;
     std::string line;
+
     while (std::getline(file, line)) {
-        for (char ch : line) {
-            if (ch == '{') {
-                braceStack.push(ch);
-            } else if (ch == '}') {
-                if (braceStack.empty()) {
-                    return false;
-                }
-                braceStack.pop();
+        for (std::string::size_type i = 0; i < line.size(); ++i) {
+            char char_value = line[i];
+            if (char_value == '{') {
+                ++openBraces;
+            } else if (char_value == '}') {
+                ++closeBraces;
             }
         }
     }
-    return braceStack.empty();
-}
 
-// Function to parse a location block
-void ConfigParser::validateLocationBlock(std::ifstream& file, const std::vector<std::string>& initialTokens, ServerBlock* serverBlock) {
-    if (initialTokens.size() < 2) {
-        throw std::runtime_error("Invalid location directive");
+    return openBraces == closeBraces;
+}
+// Trims leading and trailing whitespace characters from a string
+// std::string trim(std::string s)
+// UTILITY FUNCTION Refactor later
+std::string trimSpaces(const std::string &str) {
+    std::string::size_type start = str.find_first_not_of(" \t\r\n");
+    std::string::size_type end = str.find_last_not_of(" \t\r\n");
+
+    if (start == std::string::npos) {
+        return ""; // String is all whitespace
     }
 
-    auto locationBlock = new LocationBlock();
-    locationBlock->setURL(initialTokens[1]);
-    serverBlock->addLocationBlock(locationBlock);
-
-    std::string line;
-    while (std::getline(file, line)) {
-        line = trim(line);
-        if (line.empty() || line[0] == '#') continue;
-        if (line == "}") break;
-
-        auto tokens = tokenize(line);
-        if (tokens.empty()) continue;
-
-        const std::string& directive = tokens[0];
-        if (directive == "index") {
-            if (tokens.size() < 2) throw std::runtime_error("Missing value for index");
-            locationBlock->setIndexPage(tokens[1]);
-        } else if (directive == "root") {
-            if (tokens.size() < 2) throw std::runtime_error("Missing value for root");
-            locationBlock->setRootFolder(tokens[1]);
-        } else if (directive == "limit_except") {
-            locationBlock->setLimitExcept(tokens);
-        } else if (directive == "client_max_body_size") {
-            if (tokens.size() < 2) throw std::runtime_error("Missing value for client_max_body_size");
-            locationBlock->setClientMaxBodySize(std::stoul(tokens[1]));
-        } else {
-            throw std::runtime_error("Unknown directive in location block: " + directive);
-        }
-    }
+    return str.substr(start, end - start + 1);
 }
 
-// Function to parse a server block
-void ConfigParser::validateServerBlock(std::ifstream& file) {
-    auto serverBlock = new ServerBlock();
-    _serverBlocks.push_back(serverBlock);
+// void    parseServerBlockLine(ServerBlock* currServerBlock, std::vector<std::string> tokens)
+// UTILITY FUNCTION Refactor later
+void validateServerBlockRow(ServerBlock *serverBlock, const std::vector<std::string> &directiveTokens)
+{
+    if (directiveTokens.empty())
+        return;
 
-    std::string line;
-    while (std::getline(file, line)) {
-        line = trim(line);
-        if (line.empty() || line[0] == '#') continue;
-        if (line == "}") break;
+    const std::string &directive = directiveTokens.at(0);
 
-        auto tokens = tokenize(line);
-        if (tokens.empty()) continue;
-
-        const std::string& directive = tokens[0];
-        if (directive == "listen") {
-            if (tokens.size() < 2) throw std::runtime_error("Missing value for listen");
-            serverBlock->setListeningPort(tokens[1]);
-        } else if (directive == "server_name") {
-            if (tokens.size() < 2) throw std::runtime_error("Missing value for server_name");
-            serverBlock->setServerName(tokens[1]);
-        } else if (directive == "index") {
-            if (tokens.size() < 2) throw std::runtime_error("Missing value for index");
-            serverBlock->setIndexPage(tokens[1]);
-        } else if (directive == "root") {
-            if (tokens.size() < 2) throw std::runtime_error("Missing value for root");
-            serverBlock->setRootFolder(tokens[1]);
-        } else if (directive == "error_pages") {
-            if (tokens.size() < 3) throw std::runtime_error("Missing values for error_pages");
-            serverBlock->setErrorPage(tokens[1], tokens[2]);
-        } else if (directive == "limit_except") {
-            serverBlock->setLimitExcept(tokens);
-        } else if (directive == "client_max_body_size") {
-            if (tokens.size() < 2) throw std::runtime_error("Missing value for client_max_body_size");
-            serverBlock->setClientMaxBodySize(std::stoul(tokens[1]));
-        } else if (directive == "location") {
-            parseLocationBlock(file, tokens, serverBlock);
-        } else {
-            throw std::runtime_error("Unknown directive in server block: " + directive);
-        }
+    if (directive == "listen") {
+        if (directiveTokens.size() > 1)
+            serverBlock->setListeningPort(directiveTokens.at(1));
+    } else if (directive == "client_max_body_size") {
+        if (directiveTokens.size() > 1)
+            serverBlock->setClientMaximumBodySize(strtoul(directiveTokens.at(1).c_str(), NULL, 10));
+    } else if (directive == "server_name") {
+        if (directiveTokens.size() > 1)
+            serverBlock->setServerName(directiveTokens.at(1));
+    } else if (directive == "index") {
+        if (directiveTokens.size() > 1)
+            serverBlock->setIndexPage(directiveTokens.at(1));
+    } else if (directive == "root") {
+        if (directiveTokens.size() > 1)
+            serverBlock->setRootFolder(directiveTokens.at(1));
+    } else if (directive == "error_pages") {
+        if (directiveTokens.size() > 2)
+            serverBlock->setDefaultErrorPage(directiveTokens.at(1), directiveTokens.at(2));
+    } else if (directive == "limit_except") {
+        serverBlock->setLimitExceptFlag(directiveTokens);
     }
 }
 
-// Function to validate directives in the configuration file
-void ConfigParser::validateDirectives(const std::string& filename) {
-    std::ifstream file(filename);
-    if (!file.is_open()) {
-        throw std::runtime_error("Failed to open config file: " + filename);
+//void    parseLocationBlockLine(LocationBlock* currLocationBlock, std::vector<std::string> tokens)
+void validateLocationBlockRow(LocationBlock *locationBlock, const std::vector<std::string> &directiveTokens) {
+    if (directiveTokens.empty())
+        return;
+
+    const std::string& directive = directiveTokens.at(0);
+
+    if (directive == "index") {
+        if (directiveTokens.size() > 1)
+            locationBlock->setIndexPage(directiveTokens.at(1));
+    } else if (directive == "root") {
+        if (directiveTokens.size() > 1)
+            locationBlock->setRootFolder(directiveTokens.at(1));
+    } else if (directive == "limit_except") {
+        locationBlock->setLimitExceptFlag(directiveTokens);
+    } else if (directive == "client_max_body_size") {
+        if (directiveTokens.size() > 1)
+            locationBlock->setClientMaxBodySize(strtoul(directiveTokens.at(1).c_str(), NULL, 10));
     }
+}
 
-    std::string line;
-    while (std::getline(file, line)) {
-        line = trim(line);
-        if (line.empty() || line[0] == '#') continue;
 
-        auto tokens = tokenize(line);
-        if (tokens.empty()) continue;
+    // Add a locationblock to the serverblock
 
-        const std::string& directive = tokens[0];
-        if (directive == "server") {
-            parseServerBlock(file);
-        } else if (directive == "http") {
-            // Skip http block for now
+// void    Config::parseLocationBlock(std::ifstream& file, std::vector<std::string> tokens, ServerBlock* sb);
+void ConfigParser::validateLocationBlock(std::ifstream &fileStream, const std::vector<std::string> &directiveTokens, ServerBlock *serverBlock) 
+{
+    // Create a new LocationBlock and add it to the ServerBlock
+    LocationBlock *locationBlock = new LocationBlock;
+    serverBlock->setNewLocationBlock(locationBlock);
+    locationBlock->setURL(directiveTokens.at(1));
+
+    // Allowed directive keys inside a location block
+    std::vector<std::string> allowedDirectives;
+    allowedDirectives.push_back("index");
+    allowedDirectives.push_back("root");
+    allowedDirectives.push_back("limit_except");
+    allowedDirectives.push_back("client_max_body_size");
+
+    std::string currentLine;
+    while (std::getline(fileStream, currentLine))
+    {
+        currentLine = trimSpaces(currentLine);
+
+        // Skip empty lines or comments
+        if (currentLine.empty() || currentLine[0] == '#')
+        {
+            std::cout << "Skipping empty line or comment in location block." << std::endl;
             continue;
-        } else {
-            throw std::runtime_error("Unknown top-level directive: " + directive);
+        }
+
+        // End of location block
+        if (currentLine[0] == '}')
+        {
+            return;
+        }
+
+        // Tokenize the current line by spaces
+        std::stringstream lineStream(currentLine);
+        std::vector<std::string> parsedLocTokens;
+        std::string locToken;
+        while (std::getline(lineStream, locToken, ' ')) 
+        {
+            locToken = trimSpaces(locToken);
+            if (!token.empty()) 
+            {
+                parsedLocTokens.push_back(locToken);
+            }
+        }
+
+        if (parsedLocTokens.empty())
+        {
+            std::cout << "Empty line found in location block, skipping." << std::endl;
+            continue;
+        }
+
+        // Validate directive
+        if (std::find(allowedDirectives.begin(), allowedDirectives.end(), parsedLocTokens[0]) == allowedDirectives.end())
+        {
+            std::cout << "Unrecognized location directive: " << parsedLocTokens[0] << std::endl;
+            throw DirectiveDoesNotExistException();
+        }
+
+        // Process the directive
+        validateLocationBlockRow(locationBlock, parsedLocTokens);
+
+        // If closing brace found at the end of the line, block is done
+        if (currentLine.find("}") != std::string::npos)
+        {
+            return;
         }
     }
 }
 
-// Function to check for duplicate server names and listening ports
-void ConfigParser::checkForDuplicates() {
-    std::set<std::string> serverNames;
-    std::set<std::string> listeningPorts;
+//bool Config::checkDirectives(std::string fileName)
+bool ConfigParser::validateDirectives(const std::string &configFileName) {
+    std::ifstream configFile(configFileName.c_str());
+    if (!configFile.is_open()) {
+        return false;
+    }
 
-    for (const auto& serverBlock : _serverBlocks) {
-        const std::string& name = serverBlock->getServerName();
-        const std::string& port = serverBlock->getListeningPort();
+    std::vector<std::string> validDirectiveKeys;
+    validDirectiveKeys.push_back("http");
+    validDirectiveKeys.push_back("server");
+    validDirectiveKeys.push_back("listen");
+    validDirectiveKeys.push_back("server_name");
+    validDirectiveKeys.push_back("index");
+    validDirectiveKeys.push_back("root");
+    validDirectiveKeys.push_back("location");
+    validDirectiveKeys.push_back("limit_except");
+    validDirectiveKeys.push_back("client_max_body_size");
+    validDirectiveKeys.push_back("error_pages");
 
-        if (!serverNames.insert(name).second) {
-            throw std::runtime_error("Duplicate server name: " + name);
+    std::string currentLine;
+    while (std::getline(configFile, currentLine)) {
+        currentLine = trimSpaces(currentLine); // Remove leading/trailing whitespace
+
+        // Skip empty lines and those starting with comments or brackets
+        if (currentLine.empty()) {
+            std::cout << "EMPTY" << std::endl;
         }
-        if (!listeningPorts.insert(port).second) {
-            throw std::runtime_error("Duplicate listening port: " + port);
+        if (currentLine.empty() ||
+            currentLine[0] == '#' ||
+            currentLine[0] == '{' ||
+            currentLine[0] == '}') {
+            continue;
         }
+
+        // Tokenize the line
+        std::stringstream lineStream(currentLine);
+        std::vector<std::string> directiveTokens;
+        std::string word;
+        while (std::getline(lineStream, word, ' ')) {
+            word = trimSpaces(word);
+            if (!word.empty()) {
+                directiveTokens.push_back(word);
+            }
+        }
+
+        // Validate the first token (directive)
+        if (directiveTokens.empty() ||
+            std::find(validDirectiveKeys.begin(), validDirectiveKeys.end(), directiveTokens[0]) == validDirectiveKeys.end()) {
+            std::cout << "Unrecognized token: " << directiveTokens[0] << std::endl;
+            return false;
+        }
+
+        // Server block creation
+        if (directiveTokens[0] == "server") {
+            ServerBlock* newServerBlock = new ServerBlock();
+            _server_blocks.push_back(newServerBlock);
+        }
+
+        // Handle inner directives
+        if (directiveTokens[0] != "http" && directiveTokens[0] != "server") {
+            if (directiveTokens[0] == "location") {
+                parseLocationBlock(configFile, directiveTokens, _server_blocks.back());
+            } else {
+                parseServerBlockRow(_server_blocks.back(), directiveTokens);
+            }
+        }
+
+        // Optional: Check for extra tokens
+        // if (directiveTokens.size() > 1) {
+        //     std::cout << "Extra tokens on line: " << currentLine << std::endl;
+        //     return false;
+        // }
+    }
+
+    return true;
+}
+
+bool ConfigParser::validateConfig(const std::string &configFilePath) {
+    // Block checks
+    if (!checkBalanceBraces(configFilePath))
+        throw MissingBracketsException();
+
+    // Check directive names;
+    if (!validateDirectives(configFilePath))
+        throw InvalidDirectiveException();
+    checkForDuplicateServerBlocks();
+    return true;
+}
+
+
+void    Config::checkForDuplicateServerBlocks(void){
+    std::set<std::string> uniquePorts;
+    std::set<std::string> uniqueServerNames;
+
+    for (std::vector<ServerBlock *>::iterator it = _serverBlocksFromConfig.begin(); it != _serverBlocksFromConfig.end(); ++it) {
+        // check Ports
+        if (uniquePorts.find((*it)->getListeningPort()) != uniquePorts.end())
+            throw DuplicateServerBlockException();
+        uniquePorts.insert((*it)->getListeningPort());
+        // check Server Names
+        if (uniqueServerNames.find((*it)->getServerName()) != uniqueServerNames.end())
+            throw DuplicateServerBlockException();
+        uniqueServerNames.insert((*it)->getServerName());
     }
 }
 
-// Function to parse and validate the entire configuration file
-void Config::parseConfigFile(const std::string& filename) {
-    if (!areBracesBalanced(filename)) {
-        throw std::runtime_error("Unbalanced braces in config file");
-    }
-    validateDirectives(filename);
-    checkForDuplicates();
-}
+
+
+// // Utility function to split a string into tokens based on whitespace
+// std::vector<std::string> tokenize(const std::string& line) {
+//     std::istringstream stream(line);
+//     std::vector<std::string> tokens;
+//     std::string token;
+//     while (stream >> token) {
+//         tokens.push_back(token);
+//     }
+//     return tokens;
+// }
 
 
 // Getters
-unsigned long Config::getClientMaximumBodySize() const {
-    return _clientMaxBodySize;
+unsigned long ConfigParser::getClientMaximumBodySize() const {
+    return _clientMaximumBodySize;
 }
 
-const std::string& Config::getListeningServerPort() const {
+const std::string& ConfigParser::getListeningServerPort() const {
     return _listeningServerPort;
 }
 
-const std::vector<ServerBlock*>& Config::getServerBlocks() const {
-    return _serverBlocks;
+const std::vector<ServerBlock *> &ConfigParser::getServerBlocks() const {
+    return _serverBlocksFromConfig;
 }
 
+void ConfigParser::displayConfiguration() const {
+    std::cout << "Client Maximum Body Size: " << _clientMaximumBodySize << std::endl;
+    std::cout << "Listening Server Port: " << _listeningServerPort << std::endl;
+    std::cout << "Default Error Pages: " << std::endl;
+    for (const auto &errorPage : _defaultErrorPages) {
+        std::cout << "  Status Code: " << errorPage.first << ", Page: " << errorPage.second << std::endl;
+    }
+    std::cout << "Server Blocks:" << std::endl;
+    for (const auto &serverBlock : _serverBlocksFromConfig) {
+        serverBlock->displayConfiguration();
+    }
+}
+
+const char *ConfigParser::FileNotFoundException::what() const throw() {
+    return "Configuration file not found.";
+}
+
+const char *ConfigParser::InvalidDirectiveException::what() const throw() {
+    return "Invalid directive found in configuration file.";
+}
+
+const char *ConfigParser::MissingBracketsException::what() const throw() {
+    return "Missing opening or closing brackets in configuration file.";
+}
+
+const char *ConfigParser::DuplicateServerBlockException::what() const throw() {
+    return "Duplicate server block found in configuration file.";
+}
