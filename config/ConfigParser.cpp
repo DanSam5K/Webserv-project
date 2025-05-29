@@ -1,5 +1,6 @@
 #include "ConfigParser.hpp"
-
+#include "ServerBlock.hpp"
+#include "LocationBlock.hpp"
 // void ConfigParser::validateConfig(const std::string& configFilePath) {
 //     // Dummy implementation
 //     std::cout << "Validating config file: " << configFilePath << std::endl;
