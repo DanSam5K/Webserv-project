@@ -1,6 +1,4 @@
 #include "ConfigParser.hpp"
-#include "ServerBlock.hpp"
-#include "LocationBlock.hpp"
 // void ConfigParser::validateConfig(const std::string& configFilePath) {
 //     // Dummy implementation
 //     std::cout << "Validating config file: " << configFilePath << std::endl;
@@ -127,7 +125,7 @@ std::string trimSpaces(const std::string &str) {
 
 // void    parseServerBlockLine(ServerBlock* currServerBlock, std::vector<std::string> tokens)
 // UTILITY FUNCTION Refactor later
-void validateServerBlockRow(ServerBlock *serverBlock, const std::vector<std::string> &directiveTokens)
+void validateServerBlockRow(ServerConfiguration *serverBlock, const std::vector<std::string> &directiveTokens)
 {
     if (directiveTokens.empty())
         return;
@@ -305,7 +303,7 @@ bool ConfigParser::validateDirectives(const std::string &configFileName) {
 
         // Server block creation
         if (directiveTokens[0] == "server") {
-            ServerBlock* newServerBlock = new ServerBlock();
+            ServerConfiguration* newServerBlock = new ServerConfiguration();
             _server_blocks.push_back(newServerBlock);
         }
 
@@ -341,11 +339,11 @@ bool ConfigParser::validateConfig(const std::string &configFilePath) {
 }
 
 
-void    Config::checkForDuplicateServerBlocks(void){
+void    ConfigParser::checkForDuplicateServerBlocks(void){
     std::set<std::string> uniquePorts;
     std::set<std::string> uniqueServerNames;
 
-    for (std::vector<ServerBlock *>::iterator it = _serverBlocksFromConfig.begin(); it != _serverBlocksFromConfig.end(); ++it) {
+    for (std::vector<ServerConfiguration *>::iterator it = _serverBlocksFromConfig.begin(); it != _serverBlocksFromConfig.end(); ++it) {
         // check Ports
         if (uniquePorts.find((*it)->getListeningPort()) != uniquePorts.end())
             throw DuplicateServerBlockException();
@@ -380,7 +378,7 @@ const std::string& ConfigParser::getListeningServerPort() const {
     return _listeningServerPort;
 }
 
-const std::vector<ServerBlock *> &ConfigParser::getServerBlocks() const {
+const std::vector<ServerConfiguration *> &ConfigParser::getServerBlocks() const {
     return _serverBlocksFromConfig;
 }
 

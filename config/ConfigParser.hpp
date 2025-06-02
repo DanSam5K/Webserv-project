@@ -12,7 +12,7 @@
 #include <algorithm>
 #include <cstring>
 #include <cstdlib>
-// #include "ServerBlock.hpp"
+#include "ServerConfiguration.hpp"
 // #include "utils.hpp"
 
 // class ConfigParser {
@@ -41,7 +41,7 @@ class ConfigParser
         
     public:
         // Vector of pointers to _server_blocks objects
-        std::vector<ServerBlock*> _serverBlocksFromConfig;
+        std::vector<ServerConfiguration*> _serverBlocksFromConfig;
 
         // Constructors and Destructor
         ConfigParser();
@@ -59,7 +59,7 @@ class ConfigParser
         void displayConfiguration() const;
 
         // Accessors
-        std::vector<ServerBlock *> &getServerBlocks();
+        std::vector<ServerConfiguration *> &getServerBlocks();
         unsigned long getClientMaximumBodySize() const;
 
 

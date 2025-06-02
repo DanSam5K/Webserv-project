@@ -1,42 +1,45 @@
-#ifndef LocationBlock_HPP
-# define LocationBlock_HPP
+#ifndef LOCATION_BLOCK_HPP
+#define LOCATION_BLOCK_HPP
 
-# include "utils.hpp"
+#include <string>
+#include <vector>
 
 class LocationBlock {
 private:
-    std::string     _url;
-	unsigned long   _client_max_body_size;
-    std::string     _root_folder;
-    std::string     _index_page;
+    std::string     _pathUri;               // URL path for location
+    std::string     _documentRoot;          // File system path serving files
+    std::string     _defaultIndex;          // Default index page
+    unsigned long   _maxClientBodySize;     // Max body size in bytes
 
-    // Flags for Limit Except
-    bool            _GET_allowed;
-    bool            _POST_allowed;
-    bool            _DELETE_allowed;
+    // Method restrictions
+    bool            _allowGet;
+    bool            _allowPost;
+    bool            _allowDelete;
 
 public:
-	LocationBlock();
-	LocationBlock(const LocationBlock& other);
-	~LocationBlock();
+    // Constructors & Destructor
+    LocationBlock();
+    LocationBlock(const LocationBlock& other);
+    ~LocationBlock();
 
-	LocationBlock&	operator=(const LocationBlock& other);
+    // Assignment operator
+    LocationBlock& operator=(const LocationBlock& other);
 
-    // Getters
-	std::string		getURL(void);
-	unsigned long	getClientMaxBodySize(void);
-	std::string		getRootFolder(void);
-	std::string		getIndexPage(void);
-	bool		    getLimitExceptGET(void);
-	bool		    getLimitExceptPOST(void);
-	bool    		getLimitExceptDELETE(void);
+    // Accessors (Getters)
+    std::string     getPathUri() const;
+    std::string     getDocumentRoot() const;
+    std::string     getDefaultIndex() const;
+    unsigned long   getMaxClientBodySize() const;
+    bool            isGetAllowed() const;
+    bool            isPostAllowed() const;
+    bool            isDeleteAllowed() const;
 
-    // Setters
-    void                setURL(std::string URL);
-	void	            setClientMaxBodySize(unsigned long maxBodySize);
-	void    		    setIndexPage(std::string indexPage);
-	void    		    setRootFolder(std::string rootFolder);
-	void    		    setLimitExceptFlag(std::vector<std::string> tokens);
+    // Mutators (Setters)
+    void setPathUri(const std::string& uri);
+    void setDocumentRoot(const std::string& rootPath);
+    void setDefaultIndex(const std::string& indexFile);
+    void setMaxClientBodySize(unsigned long maxSize);
+    void configureAllowedMethods(const std::vector<std::string>& methods);
 };
 
-#endif
+#endif //
