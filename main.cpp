@@ -42,7 +42,7 @@ int main(int argc, char** argv)
     }
     try
     {
-       configHandler.printConfig();
+       configHandler.displayConfiguration();
     }
     catch(const std::exception& e)
     {
