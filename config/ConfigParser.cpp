@@ -52,12 +52,12 @@
 //         };
 
 ConfigParser::ConfigParser()
-    : _clientMaximumBodySize(0), _listeningServerPort("8080") {
+    : _maxClientBodySize(0), _listeningServerPort("8080") {
     // Constructor implementation
 }
 
 ConfigParser::ConfigParser(const ConfigParser &other)
-    : _clientMaximumBodySize(other._clientMaximumBodySize),
+    : _maxClientBodySize(other._maxClientBodySize),
       _listeningServerPort(other._listeningServerPort),
       _defaultErrorPages(other._defaultErrorPages),
       _serverBlocksFromConfig(other._serverBlocksFromConfig) {
@@ -74,7 +74,7 @@ ConfigParser::~ConfigParser() {
 
 ConfigParser &ConfigParser::operator=(const ConfigParser &other) {
     if (this != &other) {
-        _clientMaximumBodySize = other._clientMaximumBodySize;
+        _maxClientBodySize = other._maxClientBodySize;
         _listeningServerPort = other._listeningServerPort;
         _defaultErrorPages = other._defaultErrorPages;
         _serverBlocksFromConfig = other._serverBlocksFromConfig;
@@ -125,7 +125,37 @@ std::string trimSpaces(const std::string &str) {
 
 // void    parseServerBlockLine(ServerBlock* currServerBlock, std::vector<std::string> tokens)
 // UTILITY FUNCTION Refactor later
-void validateServerBlockRow(ServerConfiguration *serverBlock, const std::vector<std::string> &directiveTokens)
+// void validateServerBlockRow(ServerConfiguration *serverBlock, const std::vector<std::string> &directiveTokens)
+// {
+//     if (directiveTokens.empty())
+//         return;
+
+//     const std::string &directive = directiveTokens.at(0);
+
+//     if (directive == "listen") {
+//         if (directiveTokens.size() > 1)
+//             serverBlock->setListeningPort(directiveTokens.at(1));
+//     } else if (directive == "client_max_body_size") {
+//         if (directiveTokens.size() > 1)
+//             serverBlock->setClientMaximumBodySize(strtoul(directiveTokens.at(1).c_str(), NULL, 10));
+//     } else if (directive == "server_name") {
+//         if (directiveTokens.size() > 1)
+//             serverBlock->setServerName(directiveTokens.at(1));
+//     } else if (directive == "index") {
+//         if (directiveTokens.size() > 1)
+//             serverBlock->setIndexPage(directiveTokens.at(1));
+//     } else if (directive == "root") {
+//         if (directiveTokens.size() > 1)
+//             serverBlock->setRootFolder(directiveTokens.at(1));
+//     } else if (directive == "error_pages") {
+//         if (directiveTokens.size() > 2)
+//             serverBlock->setDefaultErrorPage(directiveTokens.at(1), directiveTokens.at(2));
+//     } else if (directive == "limit_except") {
+//         serverBlock->setLimitExceptFlag(directiveTokens);
+//     }
+// }
+
+void validateServerBlockRow(ServerConfiguration *serverConfig, const std::vector<std::string> &directiveTokens)
 {
     if (directiveTokens.empty())
         return;
@@ -134,26 +164,27 @@ void validateServerBlockRow(ServerConfiguration *serverBlock, const std::vector<
 
     if (directive == "listen") {
         if (directiveTokens.size() > 1)
-            serverBlock->setListeningPort(directiveTokens.at(1));
+            serverConfig->setPort(directiveTokens.at(1));
     } else if (directive == "client_max_body_size") {
         if (directiveTokens.size() > 1)
-            serverBlock->setClientMaximumBodySize(strtoul(directiveTokens.at(1).c_str(), NULL, 10));
+            serverConfig->setMaxClientBodySize(strtoul(directiveTokens.at(1).c_str(), NULL, 10));
     } else if (directive == "server_name") {
         if (directiveTokens.size() > 1)
-            serverBlock->setServerName(directiveTokens.at(1));
+            serverConfig->setHostname(directiveTokens.at(1));
     } else if (directive == "index") {
         if (directiveTokens.size() > 1)
-            serverBlock->setIndexPage(directiveTokens.at(1));
+            serverConfig->setDefaultIndex(directiveTokens.at(1));
     } else if (directive == "root") {
         if (directiveTokens.size() > 1)
-            serverBlock->setRootFolder(directiveTokens.at(1));
+            serverConfig->setDocumentRoot(directiveTokens.at(1));
     } else if (directive == "error_pages") {
         if (directiveTokens.size() > 2)
-            serverBlock->setDefaultErrorPage(directiveTokens.at(1), directiveTokens.at(2));
+            serverConfig->setErrorPage(directiveTokens.at(1), directiveTokens.at(2));
     } else if (directive == "limit_except") {
-        serverBlock->setLimitExceptFlag(directiveTokens);
+        serverConfig->setAllowedMethods(directiveTokens);
     }
 }
+
 
 //void    parseLocationBlockLine(LocationBlock* currLocationBlock, std::vector<std::string> tokens)
 void validateLocationBlockRow(LocationBlock *locationBlock, const std::vector<std::string> &directiveTokens) {
@@ -164,15 +195,15 @@ void validateLocationBlockRow(LocationBlock *locationBlock, const std::vector<st
 
     if (directive == "index") {
         if (directiveTokens.size() > 1)
-            locationBlock->setIndexPage(directiveTokens.at(1));
+            locationBlock->setDefaultIndex(directiveTokens.at(1));
     } else if (directive == "root") {
         if (directiveTokens.size() > 1)
-            locationBlock->setRootFolder(directiveTokens.at(1));
+            locationBlock->setDocumentRoot(directiveTokens.at(1));
     } else if (directive == "limit_except") {
-        locationBlock->setLimitExceptFlag(directiveTokens);
+        locationBlock->configureAllowedMethods(directiveTokens);
     } else if (directive == "client_max_body_size") {
         if (directiveTokens.size() > 1)
-            locationBlock->setClientMaxBodySize(strtoul(directiveTokens.at(1).c_str(), NULL, 10));
+            locationBlock->setMaxClientBodySize(strtoul(directiveTokens.at(1).c_str(), NULL, 10));
     }
 }
 
@@ -180,12 +211,12 @@ void validateLocationBlockRow(LocationBlock *locationBlock, const std::vector<st
     // Add a locationblock to the serverblock
 
 // void    Config::parseLocationBlock(std::ifstream& file, std::vector<std::string> tokens, ServerBlock* sb);
-void ConfigParser::validateLocationBlock(std::ifstream &fileStream, const std::vector<std::string> &directiveTokens, ServerBlock *serverBlock) 
+void ConfigParser::validateLocationBlock(std::ifstream &fileStream, const std::vector<std::string> &directiveTokens, ServerConfiguration*serverBlock) 
 {
     // Create a new LocationBlock and add it to the ServerBlock
     LocationBlock *locationBlock = new LocationBlock;
-    serverBlock->setNewLocationBlock(locationBlock);
-    locationBlock->setURL(directiveTokens.at(1));
+    serverBlock->addRoute(locationBlock);
+    locationBlock->setPathUri(directiveTokens.at(1));
 
     // Allowed directive keys inside a location block
     std::vector<std::string> allowedDirectives;
@@ -219,7 +250,7 @@ void ConfigParser::validateLocationBlock(std::ifstream &fileStream, const std::v
         while (std::getline(lineStream, locToken, ' ')) 
         {
             locToken = trimSpaces(locToken);
-            if (!token.empty()) 
+            if (!locToken.empty()) 
             {
                 parsedLocTokens.push_back(locToken);
             }
@@ -304,15 +335,15 @@ bool ConfigParser::validateDirectives(const std::string &configFileName) {
         // Server block creation
         if (directiveTokens[0] == "server") {
             ServerConfiguration* newServerBlock = new ServerConfiguration();
-            _server_blocks.push_back(newServerBlock);
+            _serverBlocksFromConfig.push_back(newServerBlock);
         }
 
         // Handle inner directives
         if (directiveTokens[0] != "http" && directiveTokens[0] != "server") {
             if (directiveTokens[0] == "location") {
-                parseLocationBlock(configFile, directiveTokens, _server_blocks.back());
+                validateLocationBlock(configFile, directiveTokens, _serverBlocksFromConfig.back());
             } else {
-                parseServerBlockRow(_server_blocks.back(), directiveTokens);
+                validateServerBlockRow(_serverBlocksFromConfig.back(), directiveTokens);
             }
         }
 
@@ -345,13 +376,13 @@ void    ConfigParser::checkForDuplicateServerBlocks(void){
 
     for (std::vector<ServerConfiguration *>::iterator it = _serverBlocksFromConfig.begin(); it != _serverBlocksFromConfig.end(); ++it) {
         // check Ports
-        if (uniquePorts.find((*it)->getListeningPort()) != uniquePorts.end())
+        if (uniquePorts.find((*it)->getPort()) != uniquePorts.end())
             throw DuplicateServerBlockException();
-        uniquePorts.insert((*it)->getListeningPort());
+        uniquePorts.insert((*it)->getPort());
         // check Server Names
-        if (uniqueServerNames.find((*it)->getServerName()) != uniqueServerNames.end())
+        if (uniqueServerNames.find((*it)->getHostname()) != uniqueServerNames.end())
             throw DuplicateServerBlockException();
-        uniqueServerNames.insert((*it)->getServerName());
+        uniqueServerNames.insert((*it)->getHostname());
     }
 }
 
@@ -371,7 +402,7 @@ void    ConfigParser::checkForDuplicateServerBlocks(void){
 
 // Getters
 unsigned long ConfigParser::getClientMaximumBodySize() const {
-    return _clientMaximumBodySize;
+    return _maxClientBodySize;
 }
 
 const std::string& ConfigParser::getListeningServerPort() const {
@@ -383,15 +414,14 @@ const std::vector<ServerConfiguration *> &ConfigParser::getServerBlocks() const 
 }
 
 void ConfigParser::displayConfiguration() const {
-    std::cout << "Client Maximum Body Size: " << _clientMaximumBodySize << std::endl;
+    std::cout << "Client Maximum Body Size: " << _maxClientBodySize << std::endl;
     std::cout << "Listening Server Port: " << _listeningServerPort << std::endl;
     std::cout << "Default Error Pages: " << std::endl;
-    for (const auto &errorPage : _defaultErrorPages) {
-        std::cout << "  Status Code: " << errorPage.first << ", Page: " << errorPage.second << std::endl;
+    for (std::map<int, std::string>::const_iterator it = _defaultErrorPages.begin(); it != _defaultErrorPages.end(); ++it) {
+        std::cout << "  Status Code: " << it->first << ", Page: " << it->second << std::endl;
     }
-    std::cout << "Server Blocks:" << std::endl;
-    for (const auto &serverBlock : _serverBlocksFromConfig) {
-        serverBlock->displayConfiguration();
+    for (std::vector<ServerConfiguration *>::const_iterator it = _serverBlocksFromConfig.begin(); it != _serverBlocksFromConfig.end(); ++it) {
+        (*it)->printRoutes();
     }
 }
 
@@ -409,4 +439,8 @@ const char *ConfigParser::MissingBracketsException::what() const throw() {
 
 const char *ConfigParser::DuplicateServerBlockException::what() const throw() {
     return "Duplicate server block found in configuration file.";
+}
+
+const char *ConfigParser::DirectiveDoesNotExistException::what() const throw() {
+    return "Directive does not exist in configuration file.";
 }

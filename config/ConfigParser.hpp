@@ -6,12 +6,14 @@
 #include <exception>
 #include <vector>
 #include <map>
+#include <sstream>
 #include <fstream>
 #include <string>
 #include <vector>
 #include <algorithm>
 #include <cstring>
 #include <cstdlib>
+#include <set>
 #include "ServerConfiguration.hpp"
 // #include "utils.hpp"
 
@@ -27,7 +29,7 @@ class ConfigParser
 {
     private:
         // Maximum size for client request bodies
-        unsigned long _clientMaximumBodySize;
+        unsigned long _maxClientBodySize;
 
         // Listening port for the server
         // const char*	
@@ -54,12 +56,13 @@ class ConfigParser
         // Configuration Parsing Methods
         bool validateConfig(const std::string &configFilePath);
         bool validateDirectives(const std::string &fileName);
-        void validateLocationBlock(std::ifstream &fileStream, const std::vector<std::string> &tokens, ServerBlock *serverBlock);
+        void validateLocationBlock(std::ifstream &fileStream, const std::vector<std::string> &tokens, ServerConfiguration *serverBlock);
         void checkForDuplicateServerBlocks();
         void displayConfiguration() const;
 
         // Accessors
-        std::vector<ServerConfiguration *> &getServerBlocks();
+        // std::vector<ServerConfiguration *> &getServerBlocks();
+        const std::vector<ServerConfiguration *> &getServerBlocks() const;
         unsigned long getClientMaximumBodySize() const;
 
 
@@ -83,6 +86,11 @@ class ConfigParser
         };
 
         class DuplicateServerBlockException : public std::exception {
+        public:
+            const char *what() const throw();
+        };
+
+        class DirectiveDoesNotExistException : public std::exception {
         public:
             const char *what() const throw();
         };

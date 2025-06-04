@@ -145,12 +145,12 @@ std::string ServerConfiguration::fetchErrorPagePath(HttpResponseStatus statusCod
 void ServerConfiguration::printRoutes() const {
     for (std::vector<LocationBlock*>::const_iterator it = _routes.begin(); it != _routes.end(); ++it) {
         std::cout << "  ROUTE CONFIGURATION:\n";
-        std::cout << "    Path:               " << (*it)->getURL() << "\n";
-        std::cout << "    Root Directory:     " << (*it)->getRootFolder() << "\n";
-        std::cout << "    Default Index:      " << (*it)->getIndexPage() << "\n";
-        std::cout << "    Max Body Size:      " << (*it)->getClientMaxBodySize() << "\n";
-        std::cout << "    Allow GET:          " << std::boolalpha << (*it)->getLimitExceptGET() << "\n";
-        std::cout << "    Allow POST:         " << std::boolalpha << (*it)->getLimitExceptPOST() << "\n";
-        std::cout << "    Allow DELETE:       " << std::boolalpha << (*it)->getLimitExceptDELETE() << "\n";
+        std::cout << "    Path:               " << (*it)->getPathUri() << "\n";
+        std::cout << "    Root Directory:     " << (*it)->getDocumentRoot() << "\n";
+        std::cout << "    Default Index:      " << (*it)->getDefaultIndex() << "\n";
+        std::cout << "    Max Body Size:      " << (*it)->getMaxClientBodySize() << "\n";
+        std::cout << "    Allow GET:          " << std::boolalpha << (*it)->isGetAllowed()<< "\n";
+        std::cout << "    Allow POST:         " << std::boolalpha << (*it)->isPostAllowed() << "\n";
+        std::cout << "    Allow DELETE:       " << std::boolalpha << (*it)->isDeleteAllowed() << "\n";
     }
 }
