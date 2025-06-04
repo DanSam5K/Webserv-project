@@ -10,7 +10,7 @@
 #include <unistd.h>
 
 #include "../config/ConfigParser.hpp"
-#include "../config/ServerBlock.hpp"
+#include "../config/ServerConfiguration.hpp"
 #include "../config/LocationBlock.hpp"
 #include "../server/Server.hpp"
 
