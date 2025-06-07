@@ -4,7 +4,7 @@ CXX = c++
 CXXFLAGS = -Wall -Wextra -Werror -std=c++98
 
 SRC_DIRS = main.cpp \
-		config/ConfigParser.cpp \
+		config/ConfigParser.cpp  config/LocationBlock.cpp config/ServerConfiguration.cpp \
 		server/Server.cpp \
 		http/Request.cpp http/Response.cpp \
 		utils/Logger.cpp \
