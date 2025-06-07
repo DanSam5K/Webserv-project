@@ -31,5 +31,12 @@
 *.out
 *.app
 
+#<<<<<<< feat/config
 #ignore vscode
 .vscode
+=======
+# MacOS Hidden files
+.DS_Store
+*DS_Store
+*.DS_Store
+#>>>>>>> main
