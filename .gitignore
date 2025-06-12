@@ -31,7 +31,6 @@
 *.out
 *.app
 
-#<<<<<<< feat/config
 #ignore vscode
 .vscode
 =======
@@ -39,4 +38,3 @@
 .DS_Store
 *DS_Store
 *.DS_Store
-#>>>>>>> main
