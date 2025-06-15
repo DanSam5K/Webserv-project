@@ -1,4 +1,4 @@
-#include "DeleteResponse.hpp"
+#include "DeleteActionResponse.hpp"
 #include <fstream>
 #include <cstdlib>
 #include <iostream>
@@ -7,14 +7,14 @@
 // Constructors
 // Expected when implemented expected
 
-DeleteResponse::DeleteResponse() {}
+DeleteActionResponse::DeleteActionResponse() {}
 
-DeleteResponse::DeleteResponse(ServerConfiguration* serverBlock) {
+DeleteActionResponse::DeleteActionResponse(ServerConfiguration* serverBlock) {
     _rootFolder = serverBlock->getDocumentRoot();
     _host = serverBlock->getHostname();
 }
 
-DeleteResponse::~DeleteResponse() {}
+DeleteActionResponse::~DeleteActionResponse() {}
 
 
 // Helper Function

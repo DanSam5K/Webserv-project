@@ -87,7 +87,7 @@ Content-Length: 12345
 #ifndef CLASS_POST_RESPONSE_HPP
 #define CLASS_POST_RESPONSE_HPP
 
-#include "DeleteResponse.hpp"
+#include "DeleteActionResponse.hpp"
 #include <string>
 
 class PostResponse : public Response {

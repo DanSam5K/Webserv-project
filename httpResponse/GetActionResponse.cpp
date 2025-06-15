@@ -1,4 +1,4 @@
-#include "GetResponse.hpp"
+#include "GetActionResponse.hpp"
 
 #include <fstream>
 #include <cstdio>
@@ -26,13 +26,13 @@ bool hasFileExtension(const std::string& filename, const std::string& extension)
 
 
 // Constructors
-GetResponse::GetResponse() {}
+GetActionResponse::GetActionResponse() {}
 
-GetResponse::GetResponse(ServerConfiguration* serverBlock) {
+GetActionResponse::GetActionResponse(ServerConfiguration* serverBlock) {
     _host = serverBlock->getHostname();
 }
 
-GetResponse::~GetResponse() {}
+GetActionResponse::~GetActionResponse() {}
 
 // Utility function to execute a PHP file and capture its output
 static std::string executePhpScript(const std::string& scriptPath) {
@@ -51,7 +51,7 @@ static std::string executePhpScript(const std::string& scriptPath) {
 }
 
 // Loads the content of a file or processes a PHP script if applicable
-void GetResponse::setRawBody() {
+void GetActionResponse::setRawBody() {
     std::ifstream fileStream(_resource.c_str());
     std::string fileContent((std::istreambuf_iterator<char>(fileStream)), std::istreambuf_iterator<char>());
 
@@ -65,7 +65,7 @@ void GetResponse::setRawBody() {
 }
 
 // Sets the required HTTP headers for the response
-void GetResponse::setHeaders() {
+void GetActionResponse::setHeaders() {
     setDateHeader();
     setConnectionHeader("keep-alive");
     setContentTypeHeader();
@@ -74,7 +74,7 @@ void GetResponse::setHeaders() {
 }
 
 // Builds a complete HTTP response based on the GET request
-void GetResponse::constructResponse(Request& request) {
+void GetActionResponse::constructResponse(Request& request) {
     setResource(request);
     _raw_status_line = _http_version + " 200 OK\r\n";
 
@@ -85,13 +85,13 @@ void GetResponse::constructResponse(Request& request) {
 }
 
 // Placeholder for default error response with custom body
-void GetResponse::constructDefaultResponseWithBody(Request& request, const std::string& rawBody) {
+void GetActionResponse::constructDefaultResponseWithBody(Request& request, const std::string& rawBody) {
     (void)request;
     (void)rawBody;
 }
 
 // Placeholder for serving a configured response from a file path
-void GetResponse::constructConfigResponse(Request& request, const std::string& filePath) {
+void GetActionResponse::constructConfigResponse(Request& request, const std::string& filePath) {
     (void)request;
     (void)filePath;
 }

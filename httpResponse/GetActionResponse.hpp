@@ -19,10 +19,10 @@ Example Response:
 #ifndef CLASS_GET_RESPONSE_HPP
 #define CLASS_GET_RESPONSE_HPP
 
-#include "DeleteResponse.hpp"
+#include "DeleteActionResponse.hpp"
 #include <string>
 
-class GetResponse : public Response {
+class GetActionResponse : public Response {
 private:
     std::string _host;
 
@@ -32,9 +32,9 @@ private:
 
 public:
     // Constructors & Destructor
-    GetResponse();
-    explicit GetResponse(ServerConfiguration* serverBlock);
-    virtual ~GetResponse();
+    GetActionResponse();
+    explicit GetActionResponse(ServerConfiguration* serverBlock);
+    virtual ~GetActionResponse();
 
     // Core methods
     void constructResponse(Request& request);

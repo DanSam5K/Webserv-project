@@ -231,7 +231,7 @@
 // }
 
 
-#include "PostResponse.hpp"
+#include "PostActionResponse.hpp"
 #include <fstream>
 #include <sstream>
 #include <iostream>
@@ -305,14 +305,14 @@ void moveAndRenameFile(const std::string& from, const std::string& to) {
 } // anonymous namespace
 
 // Constructors
-PostResponse::PostResponse() {}
+PostActionResponse::PostActionResponse() {}
 
-PostResponse::PostResponse(ServerConfiguration* serverBlock)
+PostActionResponse::PostActionResponse(ServerConfiguration* serverBlock)
     : _rootDirectory(serverBlock->getDocumentRoot()), _host(serverBlock->getHostname()) {}
 
-PostResponse::~PostResponse() {}
+PostActionResponse::~PostActionResponse() {}
 
-void PostResponse::executePostResponse(Request& req) {
+void PostActionResponse::executePostResponse(Request& req) {
     const std::string dataFilePath = "tmp/data-entry.txt";
     const std::string idFilePath = "tmp/id_file";
     const std::string picTempPath = "tmp/pic-entry.jpeg";
@@ -351,7 +351,7 @@ void PostResponse::executePostResponse(Request& req) {
     std::remove(idFilePath.c_str());
 }
 
-void PostResponse::executePostDeleteResponse(Request& req) {
+void PostActionResponse::executePostDeleteResponse(Request& req) {
     const std::string deleteFilePath = "tmp/delete-entry.txt";
 
     {
@@ -372,17 +372,17 @@ void PostResponse::executePostDeleteResponse(Request& req) {
     std::remove(deleteFilePath.c_str());
 }
 
-void PostResponse::setLocationHeader() {
+void PostActionResponse::setLocationHeader() {
     _headers["Location"] = "/";
 }
 
-void PostResponse::setRefreshHeader(double sec) {
+void PostActionResponse::setRefreshHeader(double sec) {
     std::ostringstream ss;
     ss << sec;
     _headers["Refresh"] = ss.str() + ";url=/";
 }
 
-void PostResponse::setHeaders() {
+void PostActionResponse::setHeaders() {
     setDateHeader();
     setConnectionHeader("close");
     setLocationHeader();
@@ -390,7 +390,7 @@ void PostResponse::setHeaders() {
     // Optionally: setCacheControl("no-cache");
 }
 
-void PostResponse::constructResponse(Request& req) {
+void PostActionResponse::constructResponse(Request& req) {
     std::string path = req.getURI().substr(1); // strip leading '/'
 
     setResource(req);
@@ -406,22 +406,22 @@ void PostResponse::constructResponse(Request& req) {
     setRawResponse();
 }
 
-void PostResponse::constructDefaultResponseWithBody(Request& req, const std::string& raw_body) {
+void PostActionResponse::constructDefaultResponseWithBody(Request& req, const std::string& raw_body) {
     (void)req;
     (void)raw_body;
 }
 
-void PostResponse::constructConfigResponse(Request& req, const std::string& filePath) {
+void PostActionResponse::constructConfigResponse(Request& req, const std::string& filePath) {
     (void)req;
     (void)filePath;
 }
 
-void PostResponse::printResponse() {
+void PostActionResponse::printResponse() {
     std::cout << "PostResponse:\n"
               << _raw_status_line << _raw_headers << _raw_body << std::endl;
 }
 
-void PostResponse::setStatusCode(HttpResponseStatus statusCode) {
+void PostActionResponse::setStatusCode(HttpResponseStatus statusCode) {
     setHttpResponseStatusCode(statusCode);
 }
 
