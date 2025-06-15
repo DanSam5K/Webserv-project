@@ -26,7 +26,14 @@
 */
 // Forward declarations to avoid circular dependencies
 // need to remove and header reference included
-class Request{};
+class Request
+{
+    // Assume Request class is defined elsewhere
+    public:
+        std::string getRawBody();
+        std::string getURI() const;
+};
+
 class Response{
     protected:
         std::string _raw_status_line;
