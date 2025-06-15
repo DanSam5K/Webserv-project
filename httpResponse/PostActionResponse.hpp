@@ -84,13 +84,19 @@ Content-Length: 12345
 }
 */
 
-#ifndef CLASS_POST_RESPONSE_HPP
-#define CLASS_POST_RESPONSE_HPP
+#ifndef POST_ACTION_RESPONSE_HPP
+#define POST_ACTION_RESPONSE_HPP
 
 #include "DeleteActionResponse.hpp"
 #include <string>
+#include <fstream>
+#include <sstream>
+#include <iostream>
+#include <cstdio>
+#include <cstdlib>
+#include <cctype>
 
-class PostResponse : public Response {
+class PostActionResponse : public Response {
     private:
         std::string _rootDirectory;
         std::string _host;
@@ -103,9 +109,9 @@ class PostResponse : public Response {
 
     public:
         // Constructors & Destructor
-        PostResponse();
-        PostResponse(ServerConfiguration* config);
-        virtual ~PostResponse();
+        PostActionResponse();
+        PostActionResponse(ServerConfiguration* config);
+        virtual ~PostActionResponse();
 
         // Core response construction
         void constructResponse(Request& request);

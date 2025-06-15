@@ -232,12 +232,6 @@
 
 
 #include "PostActionResponse.hpp"
-#include <fstream>
-#include <sstream>
-#include <iostream>
-#include <cstdio>
-#include <cstdlib>
-#include <cctype>
 
 namespace {
 

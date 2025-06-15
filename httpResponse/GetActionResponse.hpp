@@ -16,8 +16,8 @@ Example Response:
     Hello World!
 */
 
-#ifndef CLASS_GET_RESPONSE_HPP
-#define CLASS_GET_RESPONSE_HPP
+#ifndef GET_ACTION_RESPONSE_HPP
+#define GET_ACTION_RESPONSE_HPP
 
 #include "DeleteActionResponse.hpp"
 #include <string>

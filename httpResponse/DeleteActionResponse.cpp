@@ -32,7 +32,7 @@ static std::string extractImageIdFromPath(const std::string& resourcePath) {
 
 // Core DELETE logic
 
-void DeleteResponse::executeDeleteResponse(Request& request) {
+void DeleteActionResponse::executeDeleteResponse(Request& request) {
     const std::string tempFilePath = "tmp/delete-entry.txt";
     const std::string resourceId = extractImageIdFromPath(_resource);
 
@@ -65,11 +65,11 @@ void DeleteResponse::executeDeleteResponse(Request& request) {
 
 // Header Setup
 
-void DeleteResponse::setLocationHeader() {
+void DeleteActionResponse::setLocationHeader() {
     _headers.insert(std::make_pair("Location", "/"));
 }
 
-void DeleteResponse::setHeaders() {
+void DeleteActionResponse::setHeaders() {
     setDateHeader();
     setConnectionHeader("close");
     setLocationHeader();
@@ -82,7 +82,7 @@ void DeleteResponse::setHeaders() {
 
 // Full Response Construction
 
-void DeleteResponse::constructResponse(Request& request) {
+void DeleteActionResponse::constructResponse(Request& request) {
     setResource(request);
 
     // Set status line
@@ -104,12 +104,12 @@ void DeleteResponse::constructResponse(Request& request) {
 
 // Stub Methods (no-op / placeholder)
 
-void DeleteResponse::constructDefaultResponseWithBody(Request& request, const std::string& bodyContent) {
+void DeleteActionResponse::constructDefaultResponseWithBody(Request& request, const std::string& bodyContent) {
     (void)request;
     (void)bodyContent;
 }
 
-void DeleteResponse::constructConfigurationResponse(Request& request, const std::string& filePath) {
+void DeleteActionResponse::constructConfigurationResponse(Request& request, const std::string& filePath) {
     (void)request;
     (void)filePath;
 }

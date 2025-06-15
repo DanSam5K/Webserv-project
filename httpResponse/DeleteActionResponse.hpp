@@ -1,5 +1,5 @@
-#ifndef DELETE_RESPONSE_HPP
-#define DELETE_RESPONSE_HPP
+#ifndef DELETE_ACTION_RESPONSE_HPP
+#define DELETE_ACTION_RESPONSE_HPP
 
 // #include "Response.hpp"
 #include "../config/ServerConfiguration.hpp"
@@ -32,12 +32,20 @@ class Request
     public:
         std::string getRawBody();
         std::string getURI() const;
+        std::string getMethod() const;
+        std::string getResource() const;
+        void setResource(const std::string& resource);
+        void setRawBody(const std::string& body);
+        void setStatusCode(HttpResponseStatus status);
+        HttpResponseStatus getStatusCode() const;
+        std::string getHost() const;
 };
 
 class Response{
     protected:
         std::string _raw_status_line;
         std::string _raw_headers;
+        std::string _raw_response;
         std::string _raw_body;
         std::string _http_version = "HTTP/1.1";
         std::string _resource;
@@ -69,7 +77,7 @@ class Response{
 }; // Forward declaration to avoid circular dependency
 
 
-class DeleteResponse : public Response 
+class DeleteActionResponse : public Response 
 {    
     private:
         // Internal Helpers
@@ -83,9 +91,9 @@ class DeleteResponse : public Response
     
     public:
         // Constructors / Destructor
-        DeleteResponse();
-        DeleteResponse(ServerConfiguration* serverBlock);
-        virtual ~DeleteResponse();
+        DeleteActionResponse();
+        DeleteActionResponse(ServerConfiguration* serverBlock);
+        virtual ~DeleteActionResponse();
 
         // Core Response Builders
         void constructResponse(Request& request);
